@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+
+# Clés et fichiers de test locaux — ne jamais committer
+*.key
+*.pub
+*.sdoc
+!spec/**

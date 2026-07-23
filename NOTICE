@@ -1,0 +1,10 @@
+sdoc — codec et CLI de référence du format .sdoc
+Copyright 2026 Spartadoc Inc.
+
+Ce produit inclut des logiciels développés par Spartadoc Inc. (https://sdoc.ca).
+
+Licencié sous Apache License 2.0 (voir le fichier LICENSE).
+
+Dépendance tierce :
+  - @noble/post-quantum (MIT) — implémentation ML-KEM-768.
+    https://github.com/paulmillr/noble-post-quantum

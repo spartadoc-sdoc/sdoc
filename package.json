@@ -1,0 +1,61 @@
+{
+  "name": "sdoc",
+  "version": "0.1.0",
+  "description": "Codec et CLI de référence du format .sdoc — document/e-mail chiffré post-quantique (ML-KEM-768 + AES-256-GCM), ouvert et souverain.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "Spartadoc Inc.",
+  "homepage": "https://sdoc.ca",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spartadoc-sdoc/sdoc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spartadoc-sdoc/sdoc/issues"
+  },
+  "keywords": [
+    "sdoc",
+    "post-quantum",
+    "encryption",
+    "ml-kem",
+    "ml-kem-768",
+    "aes-256-gcm",
+    "codec",
+    "e2ee",
+    "format",
+    "standard"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "sdoc": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "spec"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "^0.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  }
+}
