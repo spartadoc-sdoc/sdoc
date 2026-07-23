@@ -22,9 +22,12 @@ est publique pour permettre des implémentations tierces interopérables.
 ## Installation
 
 ```bash
-npm install -g sdoc-pqc      # CLI global (la commande est `sdoc`)
+# Installé directement depuis GitHub (build à l'installation ; pas besoin du registre npm)
+npm install -g github:spartadoc-sdoc/sdoc   # CLI global (la commande est `sdoc`)
 # ou, comme bibliothèque :
-npm install sdoc-pqc
+npm install github:spartadoc-sdoc/sdoc
+# ou sans installer :
+npx github:spartadoc-sdoc/sdoc keygen -o bob
 ```
 
 Node.js 20+ requis.

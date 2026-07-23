@@ -21,9 +21,12 @@ public so that third parties can build interoperable implementations.
 ## Install
 
 ```bash
-npm install -g sdoc-pqc      # global CLI (the command is `sdoc`)
+# Installed directly from GitHub (builds on install; no npm registry needed)
+npm install -g github:spartadoc-sdoc/sdoc   # global CLI (the command is `sdoc`)
 # or, as a library:
-npm install sdoc-pqc
+npm install github:spartadoc-sdoc/sdoc
+# or run without installing:
+npx github:spartadoc-sdoc/sdoc keygen -o bob
 ```
 
 Requires Node.js 20+.

@@ -15,7 +15,7 @@ account, no server, no network.
 Check availability, install if missing:
 
 ```bash
-sdoc --version || npm install -g sdoc-pqc
+sdoc --version || npm install -g github:spartadoc-sdoc/sdoc
 ```
 
 Requires Node.js 20+.
