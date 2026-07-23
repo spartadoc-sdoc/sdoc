@@ -1,6 +1,6 @@
 name: Release
 
-# Publie sdoc-format sur npm à chaque tag de version (ex. v0.1.0).
+# Publie sdoc-pqc sur npm à chaque tag de version (ex. v0.1.0).
 # NE FAIT RIEN sans : (1) un tag poussé `v*`, ET (2) le secret NPM_TOKEN configuré
 # dans le repo. Tant que NPM_TOKEN est absent, l'étape publish échoue proprement
 # sans rien exposer — aucune publication accidentelle possible.

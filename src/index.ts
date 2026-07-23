@@ -6,7 +6,7 @@
  *
  * Usage minimal :
  *
- *   import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc-format';
+ *   import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc-pqc';
  *
  *   const { publicKey, secretKey } = await generateKemKeyPair();
  *   const blob = await encode(plaintextBytes, publicKey, MODE_SPARTADOC);

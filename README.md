@@ -21,9 +21,9 @@ public so that third parties can build interoperable implementations.
 ## Install
 
 ```bash
-npm install -g sdoc-format      # global CLI (the command is `sdoc`)
+npm install -g sdoc-pqc      # global CLI (the command is `sdoc`)
 # or, as a library:
-npm install sdoc-format
+npm install sdoc-pqc
 ```
 
 Requires Node.js 20+.
@@ -47,7 +47,7 @@ sdoc inspect letter.pdf.sdoc
 ## Library
 
 ```ts
-import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc-format';
+import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc-pqc';
 
 const { publicKey, secretKey } = await generateKemKeyPair();
 
