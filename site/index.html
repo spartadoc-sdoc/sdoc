@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>sdoc — the open post-quantum encrypted document format</title>
+<meta name="description" content="sdoc is an open, post-quantum encrypted document and e-mail format (ML-KEM-768 + AES-256-GCM). Your keys, your data — sovereign and future-proof." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f0d'/%3E%3Cpath d='M16 5l9 4v6c0 5.5-3.8 9.9-9 11-5.2-1.1-9-5.5-9-11V9z' fill='none' stroke='%2340d19a' stroke-width='2'/%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#0a0d0c; --panel:#101512; --ink:#e8efe9; --muted:#8ea59a;
+    --line:#1e2925; --accent:#40d19a; --accent-dim:#2a8f6d; --code:#0d1210;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,kbd,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);
+    background:rgba(10,13,12,.72);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}
+  .brand svg{width:26px;height:26px}
+  .nav .sp{flex:1}
+  .nav a{color:var(--muted);font-size:14px}
+  .nav a:hover{color:var(--ink);text-decoration:none}
+  .lang{border:1px solid var(--line);border-radius:8px;padding:4px 10px;color:var(--muted);
+    background:transparent;cursor:pointer;font:inherit;font-size:13px}
+  .lang:hover{color:var(--ink);border-color:var(--accent-dim)}
+
+  .hero{padding:88px 0 56px;text-align:center}
+  .kicker{color:var(--accent);font:600 13px/1 ui-monospace,monospace;letter-spacing:2px;
+    text-transform:uppercase;margin-bottom:18px}
+  h1{font-size:clamp(38px,7vw,68px);line-height:1.05;margin:0 0 18px;letter-spacing:-1.5px}
+  h1 .g{color:var(--accent)}
+  .lede{font-size:clamp(17px,2.4vw,21px);color:var(--muted);max-width:640px;margin:0 auto 30px}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:26px}
+  .btn{display:inline-block;padding:12px 22px;border-radius:10px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--accent);color:#04120c}
+  .btn.primary:hover{background:#5fe0af;text-decoration:none}
+  .btn.ghost{border:1px solid var(--line);color:var(--ink)}
+  .btn.ghost:hover{border-color:var(--accent-dim);text-decoration:none}
+  .install{display:inline-flex;align-items:center;gap:12px;background:var(--code);
+    border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:15px}
+  .install code{color:var(--ink)}
+  .install .dollar{color:var(--accent-dim)}
+  .copy{border:none;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:13px}
+  .copy:hover{color:var(--accent)}
+
+  section{padding:52px 0;border-top:1px solid var(--line)}
+  h2{font-size:clamp(24px,3.5vw,32px);margin:0 0 8px;letter-spacing:-.5px}
+  .sub{color:var(--muted);margin:0 0 30px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .card h3{margin:0 0 8px;font-size:17px;display:flex;align-items:center;gap:9px}
+  .card p{margin:0;color:var(--muted);font-size:15px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none}
+
+  pre{background:var(--code);border:1px solid var(--line);border-radius:14px;padding:20px;
+    overflow-x:auto;font-size:14px;line-height:1.7}
+  pre .c{color:var(--muted)}
+  pre .k{color:var(--accent)}
+
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:14px}
+  .frow{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .frow .sp{flex:1}
+  .maple{color:#e06b6b}
+  [data-lang-fr]{display:none}
+  html[data-l="fr"] [data-lang-en]{display:none}
+  html[data-l="fr"] [data-lang-fr]{display:revert}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <span class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#101512"/><path d="M16 5l9 4v6c0 5.5-3.8 9.9-9 11-5.2-1.1-9-5.5-9-11V9z" fill="none" stroke="#40d19a" stroke-width="2"/></svg>
+    sdoc
+  </span>
+  <span class="sp"></span>
+  <a href="https://github.com/spartadoc-sdoc/sdoc">GitHub</a>
+  <a href="https://github.com/spartadoc-sdoc/sdoc/blob/main/spec/sdoc-format.md"><span data-lang-en>Spec</span><span data-lang-fr>Spéc</span></a>
+  <button class="lang" id="lang" aria-label="Language">FR</button>
+</div></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="kicker">ML-KEM-768 · AES-256-GCM</div>
+    <h1><span data-lang-en>The open <span class="g">post-quantum</span><br>document format</span><span data-lang-fr>Le format de document<br><span class="g">post-quantique</span> ouvert</span></h1>
+    <p class="lede">
+      <span data-lang-en><code>.sdoc</code> encrypts a document or e-mail so only its intended recipient can read it — safe even against a future quantum computer. Your keys, your data.</span>
+      <span data-lang-fr><code>.sdoc</code> chiffre un document ou courriel pour que seul son destinataire puisse le lire — sûr même face à un futur ordinateur quantique. Vos clés, vos données.</span>
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/spartadoc-sdoc/sdoc"><span data-lang-en>View on GitHub</span><span data-lang-fr>Voir sur GitHub</span></a>
+      <a class="btn ghost" href="https://github.com/spartadoc-sdoc/sdoc/blob/main/spec/sdoc-format.md"><span data-lang-en>Read the spec</span><span data-lang-fr>Lire la spéc</span></a>
+    </div>
+    <div class="install">
+      <span class="dollar">$</span><code id="inst">npm install -g sdoc-format</code>
+      <button class="copy" id="copy">copy</button>
+    </div>
+  </div>
+
+  <section>
+    <h2><span data-lang-en>Why sdoc</span><span data-lang-fr>Pourquoi sdoc</span></h2>
+    <p class="sub"><span data-lang-en>An open standard, not a product feature.</span><span data-lang-fr>Un standard ouvert, pas une fonctionnalité produit.</span></p>
+    <div class="grid">
+      <div class="card"><h3><span class="dot"></span><span data-lang-en>Post-quantum</span><span data-lang-fr>Post-quantique</span></h3><p><span data-lang-en>Hybrid ML-KEM-768 (FIPS 203) + AES-256-GCM. Covers "harvest now, decrypt later".</span><span data-lang-fr>Hybride ML-KEM-768 (FIPS 203) + AES-256-GCM. Couvre « harvest now, decrypt later ».</span></p></div>
+      <div class="card"><h3><span class="dot"></span><span data-lang-en>Sovereign</span><span data-lang-fr>Souverain</span></h3><p><span data-lang-en>Keys stay with their owner. Nobody — not even us — can read your data without your consent.</span><span data-lang-fr>Les clés restent chez leur détenteur. Personne, pas même nous, ne peut lire vos données sans votre consentement.</span></p></div>
+      <div class="card"><h3><span class="dot"></span><span data-lang-en>Open</span><span data-lang-fr>Ouvert</span></h3><p><span data-lang-en>Apache-2.0, public specification, reference implementation. Build your own interoperable tools.</span><span data-lang-fr>Apache-2.0, spécification publique, implémentation de référence. Bâtissez vos propres outils interopérables.</span></p></div>
+      <div class="card"><h3><span class="dot"></span><span data-lang-en>Simple</span><span data-lang-fr>Simple</span></h3><p><span data-lang-en>One command line, no account, no server. Works in Node and the browser.</span><span data-lang-fr>Une ligne de commande, sans compte, sans serveur. Fonctionne dans Node et le navigateur.</span></p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span data-lang-en>Quick start</span><span data-lang-fr>Démarrage rapide</span></h2>
+    <p class="sub"><span data-lang-en>Generate a key pair, encrypt, decrypt.</span><span data-lang-fr>Générer une paire de clés, chiffrer, déchiffrer.</span></p>
+<pre><span class="c"># <span data-lang-en>generate keys — bob.pub is shareable, bob.key stays private</span><span data-lang-fr>générer les clés — bob.pub partageable, bob.key privée</span></span>
+<span class="k">sdoc</span> keygen -o bob
+
+<span class="c"># <span data-lang-en>encrypt a file for Bob</span><span data-lang-fr>chiffrer un fichier pour Bob</span></span>
+<span class="k">sdoc</span> encrypt letter.pdf -p bob.pub -o letter.pdf.sdoc
+
+<span class="c"># <span data-lang-en>Bob decrypts with his secret key</span><span data-lang-fr>Bob déchiffre avec sa clé secrète</span></span>
+<span class="k">sdoc</span> decrypt letter.pdf.sdoc -k bob.key -o letter.pdf</pre>
+  </section>
+
+  <section>
+    <h2><span data-lang-en>Built for agents too</span><span data-lang-fr>Pensé aussi pour les agents</span></h2>
+    <p class="sub">
+      <span data-lang-en>An AI agent can encrypt and decrypt <code>.sdoc</code> files out of the box — see the <a href="https://github.com/spartadoc-sdoc/sdoc/blob/main/skills/sdoc/SKILL.md">agent skill</a>.</span>
+      <span data-lang-fr>Un agent IA peut chiffrer et déchiffrer des <code>.sdoc</code> directement — voir le <a href="https://github.com/spartadoc-sdoc/sdoc/blob/main/skills/sdoc/SKILL.md">skill agent</a>.</span>
+    </p>
+  </section>
+</main>
+
+<footer><div class="wrap frow">
+  <span class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true" width="20" height="20"><rect width="32" height="32" rx="7" fill="#101512"/><path d="M16 5l9 4v6c0 5.5-3.8 9.9-9 11-5.2-1.1-9-5.5-9-11V9z" fill="none" stroke="#40d19a" stroke-width="2"/></svg>
+    sdoc.ca
+  </span>
+  <span class="sp"></span>
+  <span><span data-lang-en>Hosted in Canada</span><span data-lang-fr>Hébergé au Canada</span> <span class="maple">🍁</span> · Apache-2.0 · © 2026 Spartadoc Inc.</span>
+</div></footer>
+
+<script>
+  var html=document.documentElement, btn=document.getElementById('lang');
+  function set(l){html.setAttribute('data-l',l);html.lang=l;btn.textContent=l==='fr'?'EN':'FR';
+    try{localStorage.setItem('sdoc-lang',l)}catch(e){}}
+  btn.addEventListener('click',function(){set(html.getAttribute('data-l')==='fr'?'en':'fr')});
+  try{var s=localStorage.getItem('sdoc-lang');if(s)set(s);
+    else if((navigator.language||'').slice(0,2)==='fr')set('fr');}catch(e){}
+  var copy=document.getElementById('copy');
+  copy.addEventListener('click',function(){
+    navigator.clipboard.writeText(document.getElementById('inst').textContent).then(function(){
+      copy.textContent='copied';setTimeout(function(){copy.textContent='copy'},1500)})});
+</script>
+</body>
+</html>
