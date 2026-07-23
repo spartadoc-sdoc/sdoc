@@ -15,7 +15,7 @@ account, no server, no network.
 Check availability, install if missing:
 
 ```bash
-sdoc --version || npm install -g sdoc
+sdoc --version || npm install -g sdoc-format
 ```
 
 Requires Node.js 20+.

@@ -1,5 +1,5 @@
 {
-  "name": "sdoc",
+  "name": "sdoc-format",
   "version": "0.1.0",
   "description": "Codec et CLI de référence du format .sdoc — document/e-mail chiffré post-quantique (ML-KEM-768 + AES-256-GCM), ouvert et souverain.",
   "type": "module",

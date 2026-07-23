@@ -22,9 +22,9 @@ est publique pour permettre des implémentations tierces interopérables.
 ## Installation
 
 ```bash
-npm install -g sdoc      # CLI global
+npm install -g sdoc-format      # CLI global (la commande est `sdoc`)
 # ou, comme bibliothèque :
-npm install sdoc
+npm install sdoc-format
 ```
 
 Node.js 20+ requis.
@@ -48,7 +48,7 @@ sdoc inspect lettre.pdf.sdoc
 ## Bibliothèque
 
 ```ts
-import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc';
+import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc-format';
 
 const { publicKey, secretKey } = await generateKemKeyPair();
 
