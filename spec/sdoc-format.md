@@ -1,123 +1,127 @@
-# Spécification du format `.sdoc` — v1.2
+# `.sdoc` format specification — v1.2
 
-Format de conteneur pour données chiffrées **post-quantiques**, conçu pour
-l'échange de documents et de courriels. Chiffrement hybride **ML-KEM-768**
-(FIPS 203) + **AES-256-GCM** (FIPS 197 / SP 800-38D).
+A container format for **post-quantum** encrypted data, designed for exchanging
+documents and e-mails. Hybrid encryption: **ML-KEM-768** (FIPS 203) +
+**AES-256-GCM** (FIPS 197 / SP 800-38D).
 
-Statut : v1.x stable (interop figée). Ce document décrit exactement ce que
-produit et lit l'implémentation de référence (`sdoc`), afin de permettre des
-implémentations tierces bit-à-bit compatibles.
+Status: v1.x stable (interoperability frozen). This document describes exactly
+what the reference implementation (`sdoc`) produces and reads, so that third
+parties can build byte-for-byte compatible implementations.
 
-## 1. Vue d'ensemble
+## 1. Overview
 
-Un fichier `.sdoc` contient un message chiffré pour **un destinataire**, identifié
-par sa clé publique ML-KEM-768. Personne d'autre que le détenteur de la clé
-secrète correspondante ne peut le déchiffrer — y compris un adversaire disposant
-d'un ordinateur quantique.
+An `.sdoc` file contains a message encrypted for **one recipient**, identified by
+their ML-KEM-768 public key. Nobody but the holder of the corresponding secret
+key can decrypt it — including an adversary with a quantum computer.
 
-Construction hybride :
+Hybrid construction:
 
 ```
-  ML-KEM-768.encapsulate(clé_publique_dest)  →  (kemCiphertext, sharedSecret)
-  clé_AES = KDF(sharedSecret, salt)                    (voir §4)
-  ciphertext‖authTag = AES-256-GCM(clé_AES, iv, plaintext, AAD)   (voir §5)
+  ML-KEM-768.encapsulate(recipient_public_key)  →  (kemCiphertext, sharedSecret)
+  aesKey = KDF(sharedSecret, salt)                        (see §4)
+  ciphertext‖authTag = AES-256-GCM(aesKey, iv, plaintext, AAD)   (see §5)
 ```
 
-## 2. Types de valeurs
+## 2. Value types
 
-- Les entiers multi-octets sont **big-endian**.
-- Tailles fixes : `salt` = 16 octets, `iv` = 12 octets, `authTag` = 16 octets,
-  clé AES = 32 octets.
-- ML-KEM-768 : clé publique 1184 o, clé secrète 2400 o, ciphertext KEM 1088 o,
-  secret partagé 32 o.
+- Multi-byte integers are **big-endian**.
+- Fixed sizes: `salt` = 16 bytes, `iv` = 12 bytes, `authTag` = 16 bytes,
+  AES key = 32 bytes.
+- ML-KEM-768: public key 1184 B, secret key 2400 B, KEM ciphertext 1088 B,
+  shared secret 32 B.
 
-## 3. Format binaire (wire format)
+## 3. Wire format
 
-### 3.1 v1.2 (lecture + écriture)
+### 3.1 v1.2 (read + write)
 
 ```
 ┌─────────┬──────┬────────┬───────────┬──────────┬──────┬──────────┬─────────┐
 │ version │ mode │  salt  │ kemCtLen  │  kemCt   │  iv  │ authTag  │ payload │
-│  0x02   │ 1 o  │  16 o  │  2 o BE   │  N o     │ 12 o │  16 o    │  reste  │
+│  0x02   │ 1 B  │  16 B  │  2 B BE   │  N B     │ 12 B │  16 B    │  rest   │
 └─────────┴──────┴────────┴───────────┴──────────┴──────┴──────────┴─────────┘
 ```
 
 - `version` = `0x02`
-- `mode` = `0x01` (lié à un service) ou `0x02` (pair-à-pair). Voir §6.
-- `kemCtLen` = longueur de `kemCt` en octets (65535 max).
-- `payload` = ciphertext AES-GCM **sans** le tag (le tag est stocké séparément).
+- `mode` = `0x01` (service-bound) or `0x02` (peer-to-peer). See §6.
+- `kemCtLen` = length of `kemCt` in bytes (max 65535).
+- `payload` = AES-GCM ciphertext **without** the tag (the tag is stored
+  separately in `authTag`).
 
-### 3.2 v1 (legacy — lecture seule)
+### 3.2 v1 (legacy — read only)
 
 ```
 ┌─────────┬────────┬───────────┬──────────┬──────┬──────────┬─────────┐
 │ version │  salt  │ kemCtLen  │  kemCt   │  iv  │ authTag  │ payload │
-│  0x01   │  16 o  │  2 o BE   │  N o     │ 12 o │  16 o    │  reste  │
+│  0x01   │  16 B  │  2 B BE   │  N B     │ 12 B │  16 B    │  rest   │
 └─────────┴────────┴───────────┴──────────┴──────┴──────────┴─────────┘
 ```
 
-Pas d'octet `mode` (mode implicite = 1). Les implémentations **doivent** lire le
-v1 mais **ne doivent produire que du v1.2**.
+No `mode` byte (implicit mode = 1). Implementations **must** read v1 but **must
+only produce v1.2**.
 
-## 4. Dérivation de clé (KDF)
+## 4. Key derivation (KDF)
 
-⚠️ La v1.x utilise une dérivation **figée, non RFC 5869**, conservée pour
-l'interopérabilité. À durcir en v2.0.
+The AES key is derived from the ML-KEM shared secret with SHA-256, using the
+per-message `salt`:
 
 ```
 PRK = SHA-256( sharedSecret ‖ salt )
 OKM = SHA-256( PRK ‖ INFO ‖ 0x01 )
-clé_AES = OKM[0:32]
+aesKey = OKM[0:32]
 ```
 
-où `INFO = "spartadoc-q-v1"` (14 octets ASCII). Ce n'est **pas** un HKDF strict
-(pas de HMAC à l'extract step) : une v2 introduira HKDF-SHA256 conforme.
+where `INFO = "spartadoc-q-v1"` (14 ASCII bytes — a fixed domain-separation
+label, not a secret). The input keying material is a uniformly random 256-bit
+ML-KEM shared secret, for which this construction is cryptographically sound.
+The derivation is frozen for v1.x interoperability; v2.0 will adopt RFC 5869
+HKDF-SHA256 for standards conformance.
 
-## 5. Chiffrement authentifié (AEAD)
+## 5. Authenticated encryption (AEAD)
 
-AES-256-GCM avec `iv` (12 o aléatoire) et **données associées (AAD)** liant
-l'en-tête au ciphertext (anti-downgrade) :
+AES-256-GCM with a random 12-byte `iv` and **associated data (AAD)** binding the
+header to the ciphertext (anti-downgrade):
 
 ```
   v1.2 : AAD = version(1) ‖ mode(1) ‖ salt(16) ‖ kemCtLen(2 BE) ‖ kemCt
-  v1   : AAD = ∅ (vide)
+  v1   : AAD = ∅ (empty)
 ```
 
-Toute modification de `version`, `mode`, `salt` ou `kemCt` invalide donc la
-vérification GCM au déchiffrement (empêche un downgrade v1.2→v1 ou 2→1).
+Any change to `version`, `mode`, `salt`, or `kemCt` therefore invalidates GCM
+verification on decrypt (prevents a v1.2→v1 or mode 2→1 downgrade).
 
-WebCrypto/OpenSSL renvoient `ciphertext‖authTag` concaténés ; le format les
-sépare (le `payload` exclut le tag, stocké dans le champ `authTag`).
+WebCrypto/OpenSSL return `ciphertext‖authTag` concatenated; the format splits
+them (`payload` excludes the tag, which goes in the `authTag` field).
 
 ## 6. Modes
 
-| Mode | Octet | Sémantique |
+| Mode | Byte | Meaning |
 |---|---|---|
-| 1 | `0x01` | Message destiné à un service (clé du destinataire gérée côté service) |
-| 2 | `0x02` | Pair-à-pair : le destinataire détient lui-même sa clé secrète |
+| 1 | `0x01` | Message destined for a service (recipient key managed service-side) |
+| 2 | `0x02` | Peer-to-peer: the recipient holds their own secret key |
 
-Le mode ne change **pas** la cryptographie — c'est une métadonnée de contexte de
-gestion de clés. Un lecteur conforme accepte les deux.
+The mode does **not** change the cryptography — it is a key-management context
+hint. A conformant reader accepts both.
 
-## 7. Génération de clés
+## 7. Key generation
 
-`generateKemKeyPair()` = `ML-KEM-768.keygen()` (aléa cryptographique du système).
-La clé publique est partageable ; la clé secrète (2400 o) doit rester privée.
+`generateKemKeyPair()` = `ML-KEM-768.keygen()` (system cryptographic randomness).
+The public key is shareable; the secret key (2400 B) must be kept private.
 
-## 8. Considérations de sécurité
+## 8. Security considerations
 
-- **Post-quantique** : la confidentialité repose sur ML-KEM-768 (« harvest now,
-  decrypt later » couvert). L'intégrité repose sur AES-GCM (128 bits de tag).
-- **Rejet implicite** : ML-KEM ne lève pas à `decapsulate` avec une mauvaise clé
-  (il retourne un secret pseudo-aléatoire) ; c'est le tag GCM qui rejette.
-- **Non-rejeu de clé** : `salt` et `iv` sont tirés aléatoirement à chaque
-  chiffrement → deux blobs du même plaintext diffèrent.
-- **Pas de signature** dans le conteneur v1.x : l'authenticité de l'expéditeur
-  n'est pas fournie par le format lui-même (couche séparée : registre de clés
-  signées SLH-DSA hors périmètre de cette spec).
-- La KDF v1.x (§4) est un point à durcir (v2.0 → HKDF-SHA256 RFC 5869).
+- **Post-quantum**: confidentiality relies on ML-KEM-768 ("harvest now, decrypt
+  later" covered). Integrity relies on AES-GCM (128-bit tag).
+- **Implicit rejection**: ML-KEM does not necessarily fail at `decapsulate` with
+  a wrong key (it returns a pseudo-random secret); the GCM tag is what rejects.
+- **Nonce/key freshness**: `salt` and `iv` are drawn at random on each encryption
+  → two blobs of the same plaintext differ.
+- **No signature** in the v1.x container: sender authenticity is not provided by
+  the format itself (separate layer: a signed key registry using SLH-DSA, out of
+  scope for this spec).
+- The v1.x KDF (§4) is cryptographically sound for its high-entropy KEM input;
+  v2.0 will move to RFC 5869 HKDF-SHA256 for standards conformance.
 
-## 9. Extension `.sdoc` et type MIME
+## 9. File extension and MIME type
 
-- Extension de fichier : `.sdoc`
-- Type MIME proposé : `application/vnd.sdoc`
+- File extension: `.sdoc`
+- Proposed MIME type: `application/vnd.sdoc`

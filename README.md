@@ -1,82 +1,88 @@
 # sdoc
 
+**English** · [Français](./README.fr.md)
+
 [![CI](https://github.com/spartadoc-sdoc/sdoc/actions/workflows/ci.yml/badge.svg)](https://github.com/spartadoc-sdoc/sdoc/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 
-**Le format ouvert de document/e-mail chiffré post-quantique.**
+**The open post-quantum encrypted document / e-mail format.**
 
-`.sdoc` est un conteneur pour données chiffrées qui reste sûr même face à un
-futur ordinateur quantique : chiffrement hybride **ML-KEM-768** (FIPS 203) +
-**AES-256-GCM**. Seul le détenteur de la clé secrète peut lire un `.sdoc` —
-personne d'autre, jamais.
+`.sdoc` is a container for encrypted data that stays secure even against a future
+quantum computer: hybrid **ML-KEM-768** (FIPS 203) + **AES-256-GCM**. Only the
+holder of the secret key can read a `.sdoc` — nobody else, ever.
 
-Ce dépôt est l'**implémentation de référence** : un codec portable et un CLI
-sans dépendance de service. La [spécification du format](./spec/sdoc-format.md)
-est publique pour permettre des implémentations tierces interopérables.
+This repository is the **reference implementation**: a portable codec and a CLI
+with no service dependency. The [format specification](./spec/sdoc-format.md) is
+public so that third parties can build interoperable implementations.
 
-> Souveraineté cryptographique : les clés restent chez leur détenteur. Format
-> ouvert, hébergé au Canada — [sdoc.ca](https://sdoc.ca).
+> Cryptographic sovereignty: keys stay with their owner. Open format, hosted in
+> Canada — [sdoc.ca](https://sdoc.ca).
 
-## Installation
+## Install
 
 ```bash
-npm install -g sdoc      # CLI global
-# ou, comme bibliothèque :
+npm install -g sdoc      # global CLI
+# or, as a library:
 npm install sdoc
 ```
 
-Node.js 20+ requis.
+Requires Node.js 20+.
 
-## CLI — démarrage rapide
+## CLI — quick start
 
 ```bash
-# 1. Générer une paire de clés (bob.pub partageable, bob.key à garder privée)
+# 1. Generate a key pair (bob.pub is shareable, bob.key stays private)
 sdoc keygen -o bob
 
-# 2. Alice chiffre un fichier pour Bob avec la clé publique de Bob
-sdoc encrypt lettre.pdf -p bob.pub -o lettre.pdf.sdoc
+# 2. Alice encrypts a file for Bob using Bob's public key
+sdoc encrypt letter.pdf -p bob.pub -o letter.pdf.sdoc
 
-# 3. Bob déchiffre avec sa clé secrète
-sdoc decrypt lettre.pdf.sdoc -k bob.key -o lettre.pdf
+# 3. Bob decrypts with his secret key
+sdoc decrypt letter.pdf.sdoc -k bob.key -o letter.pdf
 
-# Inspecter l'en-tête sans déchiffrer
-sdoc inspect lettre.pdf.sdoc
+# Inspect the header without decrypting
+sdoc inspect letter.pdf.sdoc
 ```
 
-## Bibliothèque
+## Library
 
 ```ts
 import { encode, decode, generateKemKeyPair, MODE_SPARTADOC } from 'sdoc';
 
 const { publicKey, secretKey } = await generateKemKeyPair();
 
-const blob = await encode(new TextEncoder().encode('Bonjour'), publicKey, MODE_SPARTADOC);
+const blob = await encode(new TextEncoder().encode('Hello'), publicKey, MODE_SPARTADOC);
 const { plaintext } = await decode(blob, secretKey);
 
-console.log(new TextDecoder().decode(plaintext)); // "Bonjour"
+console.log(new TextDecoder().decode(plaintext)); // "Hello"
 ```
 
-API exportée : `encode`, `decode`, `generateKemKeyPair`, `parseHeader`,
-`writeBlob`, les constantes `MODE_SPARTADOC` / `MODE_P2P` et les erreurs typées
+Exported API: `encode`, `decode`, `generateKemKeyPair`, `parseHeader`,
+`writeBlob`, the constants `MODE_SPARTADOC` / `MODE_P2P`, and typed errors
 (`SdocError`, `DecryptionError`, …).
 
 ## Format
 
-Voir [`spec/sdoc-format.md`](./spec/sdoc-format.md) pour le format binaire complet
-(v1 legacy en lecture, v1.2 en lecture/écriture), la dérivation de clé et les
-considérations de sécurité.
+See [`spec/sdoc-format.md`](./spec/sdoc-format.md) for the full binary format
+(v1 legacy read, v1.2 read/write), key derivation, and security considerations.
 
-## Sécurité
+## Agent skill
 
-- **Post-quantique** : confidentialité via ML-KEM-768 (couvre « harvest now,
-  decrypt later »), intégrité via AES-256-GCM.
-- La dérivation de clé v1.x est figée pour l'interopérabilité et **sera durcie en
-  v2.0** (HKDF-SHA256 RFC 5869). Détails dans la spec §4.
-- Le format v1.x ne porte **pas** de signature d'expéditeur (authenticité =
-  couche séparée). Ne l'utilisez pas seul comme preuve d'origine.
+Driving `sdoc` from an AI agent? See [`skills/sdoc`](./skills/sdoc/SKILL.md) — a
+ready-made skill teaching an agent to encrypt/decrypt/inspect `.sdoc` files.
 
-Vulnérabilité ? Contact privé via [sdoc.ca](https://sdoc.ca), pas d'issue publique.
+## Security
 
-## Licence
+- **Post-quantum**: confidentiality via ML-KEM-768 (covers "harvest now, decrypt
+  later"), integrity via AES-256-GCM.
+- The v1.x key derivation is frozen for interoperability; v2.0 will adopt RFC 5869
+  HKDF-SHA256 for standards conformance. See spec §4.
+- The v1.x format carries **no sender signature** (authenticity is a separate
+  layer). Do not use it alone as proof of origin.
+
+Found a vulnerability? Contact us privately via [sdoc.ca](https://sdoc.ca), not a
+public issue.
+
+## License
 
 [Apache-2.0](./LICENSE) — © 2026 Spartadoc Inc.

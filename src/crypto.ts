@@ -71,9 +71,10 @@ function asBufferSource(u: Uint8Array): BufferSource {
 /**
  * HKDF avec PRK = sha256(sharedSecret || salt) puis HMAC-step in-line.
  *
- * Note implémentation : dérivation figée v1.x pour interop bit-à-bit entre
- * implémentations. Ce n'est PAS un HKDF RFC5869 strict (pas de HMAC à l'extract
- * step) — voir spec/sdoc-format.md §Dérivation. À durcir en v2.0.
+ * Note implémentation : dérivation figée v1.x pour interop bit-à-bit. L'entrée
+ * étant le secret partagé ML-KEM (256 bits uniformes), cette construction est
+ * cryptographiquement saine ; la v2.0 adoptera HKDF-SHA256 (RFC 5869) par
+ * conformité. Voir spec/sdoc-format.md §4.
  */
 async function deriveAesKey(sharedSecret: Uint8Array, salt: Uint8Array): Promise<Uint8Array> {
   const subtle = getCrypto().subtle;
