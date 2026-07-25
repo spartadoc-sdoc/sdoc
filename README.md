@@ -5,7 +5,7 @@
 [![CI](https://github.com/spartadoc-sdoc/sdoc/actions/workflows/ci.yml/badge.svg)](https://github.com/spartadoc-sdoc/sdoc/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 
-**The open post-quantum encrypted document / e-mail format.**
+**The open post-quantum encrypted document format.**
 
 `.sdoc` is a container for encrypted data that stays secure even against a future
 quantum computer: hybrid **ML-KEM-768** (FIPS 203) + **AES-256-GCM**. Only the

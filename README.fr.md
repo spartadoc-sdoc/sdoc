@@ -5,7 +5,7 @@
 [![CI](https://github.com/spartadoc-sdoc/sdoc/actions/workflows/ci.yml/badge.svg)](https://github.com/spartadoc-sdoc/sdoc/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 
-**Le format ouvert de document/e-mail chiffré post-quantique.**
+**Le format ouvert de document chiffré post-quantique.**
 
 `.sdoc` est un conteneur pour données chiffrées qui reste sûr même face à un
 futur ordinateur quantique : chiffrement hybride **ML-KEM-768** (FIPS 203) +

@@ -8,7 +8,7 @@
  * client produit.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { argv, exit, stderr } from 'node:process';
 import { encode, decode } from './crypto.js';
 import { generateKemKeyPair } from './keys.js';
@@ -31,6 +31,7 @@ Options :
   -p, --pub <chemin>     Fichier de clé publique (base64)
   -k, --key <chemin>     Fichier de clé secrète (base64)
   -m, --mode <1|2>       1 = lié à un service (défaut), 2 = pair-à-pair
+  -f, --force            Écraser les fichiers de sortie existants
   -h, --help             Cette aide
   -v, --version          Version
 
@@ -58,6 +59,14 @@ interface Parsed {
   pub?: string;
   key?: string;
   mode?: string;
+  force?: boolean;
+}
+
+/** Refuse d'écraser un fichier existant sans --force (sécurité anti-perte). */
+function guardOverwrite(path: string, force: boolean | undefined): void {
+  if (!force && existsSync(path)) {
+    fail(`${path} existe déjà — utilisez -f/--force pour écraser`);
+  }
 }
 
 function parseArgs(args: string[]): Parsed {
@@ -74,6 +83,7 @@ function parseArgs(args: string[]): Parsed {
       case '-p': case '--pub': p.pub = next(); break;
       case '-k': case '--key': p.key = next(); break;
       case '-m': case '--mode': p.mode = next(); break;
+      case '-f': case '--force': p.force = true; break;
       default:
         if (a.startsWith('-')) fail(`option inconnue : ${a}`);
         p.positional.push(a);
@@ -84,6 +94,10 @@ function parseArgs(args: string[]): Parsed {
 
 async function cmdKeygen(p: Parsed): Promise<void> {
   const prefix = p.out ?? 'sdoc-key';
+  // Écraser une clé secrète = perte DÉFINITIVE d'accès à tout ce qui a été
+  // chiffré pour elle. Jamais silencieux.
+  guardOverwrite(`${prefix}.key`, p.force);
+  guardOverwrite(`${prefix}.pub`, p.force);
   const { publicKey, secretKey } = await generateKemKeyPair();
   writeFileSync(`${prefix}.pub`, toB64(publicKey) + '\n');
   writeFileSync(`${prefix}.key`, toB64(secretKey) + '\n', { mode: 0o600 });
@@ -103,6 +117,7 @@ async function cmdEncrypt(p: Parsed): Promise<void> {
   const publicKey = fromB64(readFileSync(p.pub, 'utf8'));
   const blob = await encode(plaintext, publicKey, mode);
   const out = p.out ?? `${infile}.sdoc`;
+  guardOverwrite(out, p.force);
   writeFileSync(out, blob);
   process.stdout.write(`Chiffré → ${out} (${blob.length} octets, mode ${mode})\n`);
 }
@@ -115,6 +130,7 @@ async function cmdDecrypt(p: Parsed): Promise<void> {
   const secretKey = fromB64(readFileSync(p.key, 'utf8'));
   const { plaintext, version, mode } = await decode(blob, secretKey);
   const out = p.out ?? (infile.endsWith('.sdoc') ? infile.slice(0, -5) : `${infile}.out`);
+  guardOverwrite(out, p.force);
   writeFileSync(out, plaintext);
   process.stdout.write(`Déchiffré → ${out} (v1.${version === 1 ? '0' : '2'}, mode ${mode ?? 'implicite'})\n`);
 }

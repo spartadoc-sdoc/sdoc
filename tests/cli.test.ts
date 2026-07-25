@@ -45,6 +45,18 @@ describe.skipIf(!hasBuild)('cli — round-trip keygen/encrypt/decrypt', () => {
     expect(out).toMatch(/Mode\s+: 1/);
   }, 60_000);
 
+  it('keygen refuse d\'écraser une clé existante sans --force', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sdoc-cli-'));
+    run(['keygen', '-o', 'k'], dir);
+    const before = readFileSync(join(dir, 'k.key'), 'utf8');
+    // 2e keygen sans --force → refus (protège contre la perte de la clé secrète)
+    expect(() => run(['keygen', '-o', 'k'], dir)).toThrow();
+    expect(readFileSync(join(dir, 'k.key'), 'utf8')).toBe(before);
+    // avec --force → accepté
+    run(['keygen', '-o', 'k', '--force'], dir);
+    expect(readFileSync(join(dir, 'k.key'), 'utf8')).not.toBe(before);
+  }, 60_000);
+
   it('decrypt échoue proprement avec une mauvaise clé', () => {
     const dir = mkdtempSync(join(tmpdir(), 'sdoc-cli-'));
     writeFileSync(join(dir, 'in.txt'), 'secret');
