@@ -107,6 +107,59 @@ hint. A conformant reader accepts both.
 `generateKemKeyPair()` = `ML-KEM-768.keygen()` (system cryptographic randomness).
 The public key is shareable; the secret key (2400 B) must be kept private.
 
+### 7.1 Human keys (derived key pairs)
+
+An ML-KEM-768 secret key is 2400 bytes. It cannot be displayed on a screen, read
+aloud, or sent in a text message. For transfers between people, this
+specification defines a **human key**: a short secret from which the pair is
+deterministically derived. The container is unchanged — a file encrypted this way
+is an ordinary `.sdoc` and any conforming implementation can read it.
+
+**Presentation.** `SDOC-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX` — the prefix,
+then 32 characters in eight groups of four.
+
+**Alphabet.** Crockford Base32: `0123456789ABCDEFGHJKMNPQRSTVWXYZ`. It excludes
+`I`, `L`, `O` and `U`. The first three are excluded because they are confused
+with `1` and `0` when a key is transcribed by hand; `U` so that a random key
+cannot spell an offensive word.
+
+**Normalisation.** Before decoding, an implementation MUST: uppercase the input;
+remove every character that is neither a letter nor a digit (so spaces, dashes
+and line breaks are ignored); strip a leading `SDOC` prefix if present; then map
+`O` → `0` and `I`, `L` → `1`. The result MUST be exactly 32 characters, each in
+the alphabet above; otherwise the key is malformed and MUST be rejected as such —
+distinctly from a key that is well-formed but does not decrypt.
+
+**Derivation.** With `ikm` the 20 bytes decoded from the normalised key:
+
+```
+seed = HKDF-SHA256(
+         ikm  = ikm,                              // 20 bytes, 160 bits
+         salt = "" (empty),
+         info = "spartadoc-sdoc-humankey-v1",     // exact ASCII, no NUL
+         L    = 64)                               // d || z, per FIPS 203
+(publicKey, secretKey) = ML-KEM-768.keygen(seed)
+```
+
+Note this is RFC 5869 HKDF-SHA256, unlike the container KDF of §4, which stays
+frozen for v1.x compatibility.
+
+**Mode.** A file encrypted to a human key MUST use mode 2 (peer-to-peer, §6): the
+key designates a bearer, not a service.
+
+**Entropy.** 160 bits, above the 128-bit floor, and below the 192-bit classical
+security of ML-KEM-768 — the human key, not the KEM, is the limiting factor. This
+is deliberate: 32 characters is the longest string a person reliably transcribes.
+Implementations MUST draw it from a cryptographic random source.
+
+**Versioning.** The `info` string carries `-v1`. Any future change to this
+derivation MUST use a new `info` value *and* a new visible prefix, so that a key
+always states which derivation produced it. Changing the derivation without
+changing the prefix would silently render every existing file unreadable.
+
+**Recovery.** None. Nothing is escrowed, so a lost human key is a lost file. An
+implementation MUST state this where it issues the key, not in small print.
+
 ## 8. Security considerations
 
 - **Post-quantum**: confidentiality relies on ML-KEM-768 ("harvest now, decrypt
@@ -120,6 +173,14 @@ The public key is shareable; the secret key (2400 B) must be kept private.
   scope for this spec).
 - The v1.x KDF (§4) is cryptographically sound for its high-entropy KEM input;
   v2.0 will move to RFC 5869 HKDF-SHA256 for standards conformance.
+- **Human keys** (§7.1) cap the effective strength of a file at 160 bits, below
+  the 192-bit classical security of ML-KEM-768 itself. They are a transport
+  convenience for people, and remain far beyond brute force; a deployment that
+  does not need a human to carry the key SHOULD use a full key pair.
+- Human keys are **offline-guessable** in principle: an attacker holding the
+  ciphertext can test candidate keys without contacting anyone. At 160 bits of
+  true randomness this is not a practical concern — but it is why an
+  implementation MUST generate them randomly and MUST NOT let a user choose one.
 
 ## 9. File extension and MIME type
 

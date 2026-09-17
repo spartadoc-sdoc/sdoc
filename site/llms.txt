@@ -1,0 +1,68 @@
+# sdoc
+
+> An open, post-quantum encrypted document format (ML-KEM-768 + AES-256-GCM),
+> with a reference codec and CLI. Apache-2.0. No account, no server, no upload:
+> every operation runs on the holder's own machine.
+
+`.sdoc` seals a file in an encrypted capsule that only the holder of the matching
+key can open, including against an adversary who stores the ciphertext today and
+runs a quantum computer later. It is a format, not a product feature: the
+specification is public and anyone may implement it.
+
+## For agents
+
+The `sdoc` CLI is designed to be driven by a program. It requires no account, no
+API key and no network, because encryption and decryption are local computation.
+
+```bash
+sdoc --version || npm install -g github:spartadoc-sdoc/sdoc   # Node.js 20+
+
+sdoc encrypt <file> --human --json        # encrypt, mint and return the key
+sdoc decrypt <file.sdoc> --human-key <key> --json
+sdoc key --json                           # mint a key alone
+sdoc inspect <file.sdoc>                  # read the header, no key needed
+```
+
+`--json` prints a single JSON object on stdout, including on failure
+(`{"ok": false, "error": "..."}`). There is no prose to parse.
+
+An Agent Skill is published at `skills/sdoc/SKILL.md` in the repository.
+
+## Two kinds of key
+
+- **Key pair** — `<name>.pub` (shareable) and `<name>.key` (secret). For a
+  durable recipient.
+- **Human key** — `SDOC-XXXX-XXXX-...`, 32 characters, 160 bits. The ML-KEM-768
+  pair is *derived* from it deterministically, so nothing is stored. It survives
+  being read aloud, retyped or pasted: the alphabet excludes `I`, `L`, `O` and
+  `U`, and case, spaces and dashes are ignored on input.
+
+Both produce ordinary `.sdoc` files, readable by any conforming implementation.
+
+A key is never escrowed anywhere. **A lost key is a lost file** — that is the
+direct counterpart of there being no server able to read your data.
+
+## Rules that matter when you act on someone's behalf
+
+- Treat a human key as a secret, like a `.key` file. Do not log it, commit it, or
+  paste it into a shared document.
+- Send the `.sdoc` and its key through *different* channels. Together in one
+  message, they protect nothing.
+- After minting a key, surface it to the user immediately and state that it
+  cannot be reissued.
+- Do not guess keys. A wrong key and a corrupted file produce distinct errors;
+  read which one you got.
+
+## Links
+
+- Specification: https://github.com/spartadoc-sdoc/sdoc/blob/main/spec/sdoc-format.md
+- Source and reference implementation: https://github.com/spartadoc-sdoc/sdoc
+- Agent Skill: https://github.com/spartadoc-sdoc/sdoc/blob/main/skills/sdoc/SKILL.md
+- Browser tool, for a recipient with nothing installed: https://spartadoc.com
+- Licence: Apache-2.0
+
+## Not part of this project
+
+There is no hosted encryption API, and there will not be one: sending the
+plaintext to a server is exactly what this format exists to avoid. Anything
+offering to encrypt `.sdoc` files server-side is not us.

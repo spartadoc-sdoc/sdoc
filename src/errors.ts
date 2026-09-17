@@ -36,3 +36,18 @@ export class DecryptionError extends SdocError {
     }
   }
 }
+
+/**
+ * Clé humaine mal formée : mauvaise longueur ou caractère hors alphabet.
+ *
+ * Volontairement DISTINCTE de DecryptionError. « Cette clé n'a pas le bon
+ * format » et « cette clé ne déchiffre pas ce fichier » sont deux situations
+ * différentes : la première se corrige en recopiant mieux, la seconde veut dire
+ * qu'on n'a pas la bonne clé.
+ */
+export class MalformedKeyError extends SdocError {
+  override readonly name = 'MalformedKeyError';
+  constructor(public readonly detail: string) {
+    super(`Clé mal formée : ${detail}`);
+  }
+}
