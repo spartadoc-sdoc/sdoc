@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+
+# Description du projet à l'intention des modèles de langage et des agents :
+# ce qu'est .sdoc, les commandes exactes, et les règles à respecter quand on
+# agit pour le compte de quelqu'un. Texte brut, aucun JavaScript requis.
+# https://llmstxt.org/
+Llms: https://sdoc.ca/llms.txt
