@@ -22,6 +22,7 @@ export {
   InvalidModeError,
   TruncatedBlobError,
   DecryptionError,
+  MalformedKeyError,
 } from './errors.js';
 export {
   MODE_SPARTADOC,
@@ -33,3 +34,12 @@ export {
   type SdocHeader,
   type SdocDecodeResult,
 } from './types.js';
+export {
+  generateHumanKey,
+  normalizeHumanKey,
+  formatHumanKey,
+  isValidHumanKey,
+  deriveKeyPairFromHumanKey,
+  HUMAN_KEY_BODY_LENGTH,
+  HUMAN_KEY_PREFIX,
+} from './humankey.js';
